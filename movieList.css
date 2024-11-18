@@ -1,0 +1,168 @@
+body {
+    background-color: #222;
+    font-family: sans-serif;
+    color: #fff;
+}
+
+main {
+    padding: 4.5em 0 4em;
+}
+
+#header {
+    background-color: #95202e;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 100;
+    
+    display: flex;
+    padding: 4px 8px;
+    flex-wrap: wrap;
+    align-content: space-around;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#header h1 {
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    justify-content: flex-start;
+}
+
+#header h1 span {
+    color: gold;
+}
+
+#filter {
+    height: 1.8em;
+    display: inline-flex;
+    justify-content: flex-end;
+
+    background-color: white;
+    color: #95202e;
+    border: 2px #95202e solid;
+    border-radius: 8px;
+}
+
+#movieArea {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    --cardsGap: 1rem;
+    padding-bottom: var(--cardsGap);
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.movieInfo {
+    display: flex;
+    color: white;
+    --labelOffset: 1rem;
+    --arrowClipSize: 1.5rem;
+    margin-left: calc(-1* var(--cardsGap));
+    margin-bottom: 36px;
+}
+
+.movieInfo .number {
+    background: white;
+    color: var(--cardColor);
+    transform: translateX(var(--labelOffset)) translateY(calc(-1 * var(--labelOffset)));
+    z-index: 1;
+    text-align: center;
+}
+
+.movieInfo .id {
+    font-size: 2em;
+    font-weight: 700;
+}
+
+.movieInfo .rate {
+    font-size: 1em;
+    margin: 0;
+    width: 6em;
+}
+
+.movieInfo .content {
+    background-color: var(--cardColor);
+    --inlinePadding: 1em;
+    --boxPadding: 1em;
+    padding: var(--boxPadding)
+        calc(var(--inlinePadding) + var(--arrowClipSize))
+        var(--boxPadding)
+        var(--inlinePadding);
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--arrowClipSize)) 0,
+        100% 50%,
+        calc(100% - var(--arrowClipSize)) 100%,
+        calc(100% - var(--arrowClipSize)) calc(100% + var(--cardsGap)),
+        0 calc(100% + var(--cardsGap))
+    );
+    position: relative;
+    width: 100%;
+}
+
+.movieInfo .content::before {
+    content: "";
+    position: absolute;
+    width: var(--labelOffset);
+    height: var(--labelOffset);
+    background: var(--cardColor);
+    left: 0;
+    bottom: 0;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    filter: brightness(0.75);
+}
+
+.movieInfo .content::after {
+    content: "";
+    position: absolute;
+    height: 24px;
+    width: var(--cardsGap);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.25), transparent 50%);
+    left: 0;
+    top: 100%;
+}
+
+.movieInfo .content .title {
+    font-size: 1.25em;
+    border-bottom: 2px white dashed;
+    margin: -8px 0 4px;
+    padding: 0px 12px;
+}
+
+.movieInfo .content .desc {
+    margin: 0;
+    padding: 4px 12px 0px;
+    display: none;
+}
+
+.movieInfo .content button {
+    width: 100%;
+    margin: 4px 8px 0;
+    background-color: var(--cardColor);
+    color: white;
+    border: 2px white solid;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.movieInfo .content img {
+    height: 10vh;
+    float: right;
+}
+
+.movieInfo.shown .content .desc {
+    display: block;
+}
+
+.movieInfo.shown .content button {
+    display: none;
+}
+
+.movieInfo.shown .content {
+    clip-path: polygon(0 0, 100% 0%, 100% 100%, 0 100%);
+    padding-right: 0;
+}
