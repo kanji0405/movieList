@@ -1,111 +1,12 @@
 <!DOCTYPE html>
-<html>
-<header>
-    <meta charset="utf-8">
-    <title>映画リスト</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="./movieList.css">
-    <script>
-const RATE_COLORS = {
-    0: '#444444',
-    1: '#444444',
-    2: '#167f83',
-    3: '#658519',
-    4: '#a94710',
-    5: '#95202e',
-};
-
-const SORT_TYPES = {
-    OLDER_DATE: { symbol: 'olderDate', text: '視聴日時が古い順' },
-    LASTEST_DATE: { symbol: 'lastestDate', text: '視聴日時が新しい順' },
-    HIGHER_RATE: { symbol: 'higherRate', text: '評価が高い順' },
-    LOWER_RATE: { symbol: 'lowerRate', text: '評価が低い順' },
-};
-
-const RankController = {
-    _sortType: SORT_TYPES.OLDER_DATE,
-    _rankings: null,
-    onLoaded(res) {
-        const list = res.split(";");
-        this._rankings = list.slice(0, list.length - 1).map((line, i) => {
-            const [point = 0, title = '', desc = '', image] = line.split('|');
-            return {
-                id: i + 1,
-                point: Number(point),
-                title,
-                desc: desc.replace(/^\n+/, ""),
-                image: null,
-                //image,
-            };
-        });
-
-        const sortKey = location.hash.replace(/^#/, "");
-        this._sortType = Object.values(SORT_TYPES).find(val => val.symbol === sortKey)
-            || SORT_TYPES.OLDER_DATE;
-        this.refreshSortElements();
-        this.refreshList();
-    },
-    refreshSortElements() {
-        const target = document.getElementById("filter");
-        target.innerHTML = Object.keys(SORT_TYPES).reduce((r, key) => {
-            const { text } = SORT_TYPES[key];
-            return r.concat(
-                `<option value='${key}' ${this._sortType === SORT_TYPES[key] ? 'selected' : ''}>${text}</option>`
-            );
-        }, '');
-        target.addEventListener('change', this.sortRanking.bind(this, target));
-    },
-    sortRanking(target) {
-        this._sortType = SORT_TYPES[target.value];
-        location.hash = this._sortType.symbol;
-        this.refreshList();
-    },
-    refreshList() {
-        const array = this._rankings.slice();
-        switch (this._sortType) {
-            case SORT_TYPES.OLDER_DATE:   break;
-            case SORT_TYPES.LASTEST_DATE: array.reverse(); break;
-            case SORT_TYPES.HIGHER_RATE:  array.sort((a, b) => b.point - a.point); break;
-            case SORT_TYPES.LOWER_RATE:   array.sort((a, b) => a.point - b.point); break;
-        };
-        document.getElementById("movieArea").innerHTML = array.reduce((r, { id, point, title, desc, image }) => {
-            const button = desc ?
-                `<button onclick='RankController.showReview(${id})'>表示</button>` : '';
-            return r.concat(`
-                <li class='movieInfo' value='${id}' style='--cardColor: ${RATE_COLORS[point]}'>
-                    <div class='number'>
-                        <div class='id'>${id}</div>
-                        <div class='rate'>${"★".repeat(point)}</div>
-                    </div>
-                    <div class='content'>
-                        ${image ? `<img src='img/${image}.jpg' alt='${image}'>` : ''}
-                        <h3 class='title'>${title}</h3>
-                        ${button}
-                        <p class='desc'>${desc.replace(/\n/g, '<br>')}</p>
-                    </div>
-                </li>
-            `);
-        }, '');
-        // TODO image tap
-    },
-    showReview(id) {
-        const desc = document.querySelector(`.movieInfo[value="${id}"]`);
-        desc.classList.add('shown');
-    }
-};
-
-Promise.all([
-    new Promise(resolve => {
-        const script = document.createElement('script');
-        script.src = './formatted.txt';
-        script.addEventListener('load', resolve);
-        document.head.appendChild(script);
-    }),
-    new Promise(resolve => window.addEventListener('load', resolve))
-])
-    .then(() => RankController.onLoaded(TEXTS));
-    </script>
-</header>
+<html lang="ja">
+    <header>
+        <meta charset="utf-8">
+        <title>映画リスト</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="./movieList.css">
+        <script src="./movieList.js"></script>
+    </header>
     <body>
         <div id="header">
             <h1 id="description"><span>★</span>５段階評価</h1>
