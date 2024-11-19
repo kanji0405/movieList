@@ -36,7 +36,31 @@ const RankController = {
         this._sortType = Object.values(SORT_TYPES).find(val => val.symbol === sortKey)
             || SORT_TYPES.OLDER_DATE;
         this.refreshSortElements();
+        this.refreshRateGraph();
         this.refreshList();
+    },
+    refreshRateGraph() {
+        const ratesList = Object.keys(RATE_COLORS).map(
+            key => this._rankings.filter(ranking => ranking.point === Number(key))
+        );
+        const graph = document.querySelector('.rateGraph');
+        graph.innerHTML = `
+            <p>${this._rankings.length}件</p>
+        `;
+        Object.keys(RATE_COLORS).reduce((r, key, i) => {
+            const rate = ratesList[key].length / this._rankings.length;
+            graph.innerHTML += `
+                <div class='graphArea' style='display: ${rate === 0 ? 'none' : 'block'}; --startRate: ${r}; --endRate: ${r + rate};'>
+                    <div style='background-color: ${RATE_COLORS[key]};'></div>
+                    <p style='--radius: calc(var(--backSize) * 0.5 * ${i % 2 === 0 ? 0.5 : 0.7});'>
+                        <span>${key}</span>
+                        <br>
+                        ${ratesList[key].length}(${Math.floor(rate * 100)}%)
+                    </p>
+                </div>
+            `;
+            return r + rate;
+        }, 0.5);
     },
     refreshSortElements() {
         const target = document.getElementById("filter");

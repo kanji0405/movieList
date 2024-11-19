@@ -5,7 +5,7 @@ body {
 }
 
 main {
-    padding: 4.5em 0 4em;
+    padding: 4em 0 4em;
 }
 
 #header {
@@ -165,4 +165,70 @@ main {
 .movieInfo.shown .content {
     clip-path: polygon(0 0, 100% 0%, 100% 100%, 0 100%);
     padding-right: 0;
+}
+
+.rateGraph {
+    --backSize: 288px;
+    width: var(--backSize);
+    height: var(--backSize);
+    margin: 0 0 32px;
+    background-color: #111;
+}
+
+.rateGraph p {
+    position: absolute;
+    z-index: 100;
+    padding: 0;
+    --shadowColor: black;
+    --shadowWidth: 3px;
+    text-shadow:
+    +1px 0 var(--shadowWidth) var(--shadowColor),
+    -1px 0 var(--shadowWidth) var(--shadowColor),
+    0 +1px var(--shadowWidth) var(--shadowColor),
+    0 -1px var(--shadowWidth) var(--shadowColor);
+    margin: 0;
+}
+
+.rateGraph .graphArea div {
+    position: absolute;
+    z-index: 50;
+    --circleMargin: 4px;
+    margin: var(--circleMargin);
+    padding: 0;
+    --circleSize: calc(var(--backSize) - var(--circleMargin) * 2);
+    width: var(--circleSize);
+    height: var(--circleSize);
+    border-radius: var(--backSize);
+    clip-path: polygon(
+        50% 50%,
+        calc(50% + sin(pi * 2 * var(--startRate)) * var(--backSize))
+        calc(50% + cos(pi * 2 * var(--startRate)) * var(--backSize)),
+
+        calc(50% + sin(pi * calc(var(--endRate) + var(--startRate))) * var(--backSize) * 2)
+        calc(50% + cos(pi * calc(var(--endRate) + var(--startRate))) * var(--backSize) * 2),
+
+        calc(50% + sin(pi * 2 * var(--endRate)) * var(--backSize))
+        calc(50% + cos(pi * 2 * var(--endRate)) * var(--backSize))
+    );
+}
+
+.rateGraph .graphArea p {
+    transform: translate(-50%, -50%);
+    --radius: 0;
+    margin-left: calc(var(--backSize) * 0.5 + var(--radius) * sin(pi * calc(var(--endRate) + var(--startRate))));
+    margin-top:  calc(var(--backSize) * 0.5 + var(--radius) * cos(pi * calc(var(--endRate) + var(--startRate))));
+    margin-right: 0;
+    margin-bottom: 0;
+
+    text-align: center;
+    line-height: 1em;
+}
+
+.rateGraph span {
+    font-size: small;
+}
+
+.rateGraph span::before {
+    content: '★';
+    color: gold;
 }
