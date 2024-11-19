@@ -172,22 +172,7 @@ main {
     width: var(--backSize);
     height: var(--backSize);
     margin: 0 0 32px;
-    background-color: #111;
-    padding: 4px;
-}
-
-.rateGraph p {
-    position: absolute;
-    z-index: 100;
-    margin: 0;
-    padding: 0;
-    --shadowColor: black;
-    --shadowWidth: 3px;
-    text-shadow:
-    +1px 0 var(--shadowWidth) var(--shadowColor),
-    -1px 0 var(--shadowWidth) var(--shadowColor),
-    0 +1px var(--shadowWidth) var(--shadowColor),
-    0 -1px var(--shadowWidth) var(--shadowColor);
+    text-align: center;
 }
 
 .rateGraph div.graphArea {
@@ -197,20 +182,29 @@ main {
 }
 
 .rateGraph .graphDesc p {
-    transform: translate(-50%, -50%);
-    --radius: 0.35;
-    --posRate: 0;
-    margin-left: calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * cos(pi * 2 * var(--posRate)));
-    margin-top:  calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * sin(pi * 2 * var(--posRate)));
-    margin-right: 0;
-    margin-bottom: 0;
+    position: absolute;
+    z-index: 50;
+    --shadowColor: black;
+    --shadowWidth: 3px;
+    text-shadow:
+    +1px 0 var(--shadowWidth) var(--shadowColor),
+    -1px 0 var(--shadowWidth) var(--shadowColor),
+    0 +1px var(--shadowWidth) var(--shadowColor),
+    0 -1px var(--shadowWidth) var(--shadowColor);
 
+    transform: translate(-50%, -50%);
+    --radius: 0.4;
+    --posRate: 0;
+    margin:
+    calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * sin(pi * 2 * var(--posRate))) 0 0
+    calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * cos(pi * 2 * var(--posRate)));
+    padding: 0;
     text-align: center;
     line-height: 1em;
 }
 
 .rateGraph .graphDesc p:nth-child(even) {
-    --radius: 0.25;
+    --radius: 0.30;
 }
 
 .graphDesc span {
@@ -220,4 +214,24 @@ main {
 .graphDesc span::before {
     content: '★';
     color: gold;
+}
+
+.graphCenter {
+    width: calc(var(--backSize) * 0.45);
+    height: calc(var(--backSize) * 0.45);
+    background-color: #222;
+    border-radius: 50%;
+    display: inline-block;
+    margin: calc(var(--backSize) * 0.55 * 0.5) 0 0 0;
+}
+
+.graphCenter p {
+    text-align: center;
+    margin: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: x-large;
+    font-weight: bold;
 }

@@ -61,8 +61,10 @@ const RankController = {
 
         graph.innerHTML = `
             <div class='graphArea' style='background-image: conic-gradient(${cs.replace(/,$/, '')});'>
-            <p>${this._rankings.length}件</p>
             <div class='graphDesc'>${ps}</div>
+            <div class='graphCenter'>
+                <p>${this._rankings.length}件</p>
+            </div>
         `;
     },
     refreshSortElements() {
