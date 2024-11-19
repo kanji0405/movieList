@@ -168,16 +168,18 @@ main {
 }
 
 .rateGraph {
-    --backSize: 288px;
+    --backSize: 280px;
     width: var(--backSize);
     height: var(--backSize);
     margin: 0 0 32px;
     background-color: #111;
+    padding: 4px;
 }
 
 .rateGraph p {
     position: absolute;
     z-index: 100;
+    margin: 0;
     padding: 0;
     --shadowColor: black;
     --shadowWidth: 3px;
@@ -186,37 +188,20 @@ main {
     -1px 0 var(--shadowWidth) var(--shadowColor),
     0 +1px var(--shadowWidth) var(--shadowColor),
     0 -1px var(--shadowWidth) var(--shadowColor);
-    margin: 0;
 }
 
-.rateGraph .graphArea div {
-    position: absolute;
-    z-index: 50;
-    --circleMargin: 4px;
-    margin: var(--circleMargin);
-    padding: 0;
-    --circleSize: calc(var(--backSize) - var(--circleMargin) * 2);
-    width: var(--circleSize);
-    height: var(--circleSize);
+.rateGraph div.graphArea {
+    width: 100%;
+    height: 100%;
     border-radius: var(--backSize);
-    clip-path: polygon(
-        50% 50%,
-        calc(50% + sin(pi * 2 * var(--startRate)) * var(--backSize))
-        calc(50% + cos(pi * 2 * var(--startRate)) * var(--backSize)),
-
-        calc(50% + sin(pi * calc(var(--endRate) + var(--startRate))) * var(--backSize) * 2)
-        calc(50% + cos(pi * calc(var(--endRate) + var(--startRate))) * var(--backSize) * 2),
-
-        calc(50% + sin(pi * 2 * var(--endRate)) * var(--backSize))
-        calc(50% + cos(pi * 2 * var(--endRate)) * var(--backSize))
-    );
 }
 
-.rateGraph .graphArea p {
+.rateGraph .graphDesc p {
     transform: translate(-50%, -50%);
-    --radius: 0;
-    margin-left: calc(var(--backSize) * 0.5 + var(--radius) * sin(pi * calc(var(--endRate) + var(--startRate))));
-    margin-top:  calc(var(--backSize) * 0.5 + var(--radius) * cos(pi * calc(var(--endRate) + var(--startRate))));
+    --radius: 0.35;
+    --posRate: 0;
+    margin-left: calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * sin(pi * 2 * var(--posRate)));
+    margin-top:  calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * cos(pi * 2 * var(--posRate)));
     margin-right: 0;
     margin-bottom: 0;
 
@@ -224,11 +209,15 @@ main {
     line-height: 1em;
 }
 
-.rateGraph span {
+.rateGraph .graphDesc p:nth-child(even) {
+    --radius: 0.25;
+}
+
+.graphDesc span {
     font-size: small;
 }
 
-.rateGraph span::before {
+.graphDesc span::before {
     content: '★';
     color: gold;
 }

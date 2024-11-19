@@ -44,23 +44,26 @@ const RankController = {
             key => this._rankings.filter(ranking => ranking.point === Number(key))
         );
         const graph = document.querySelector('.rateGraph');
-        graph.innerHTML = `
-            <p>${this._rankings.length}件</p>
-        `;
-        Object.keys(RATE_COLORS).reduce((r, key, i) => {
+        let cs = '';
+        let ps = '';
+        Object.keys(RATE_COLORS).reverse().reduce((r, key) => {
             const rate = ratesList[key].length / this._rankings.length;
-            graph.innerHTML += `
-                <div class='graphArea' style='display: ${rate === 0 ? 'none' : 'block'}; --startRate: ${r}; --endRate: ${r + rate};'>
-                    <div style='background-color: ${RATE_COLORS[key]};'></div>
-                    <p style='--radius: calc(var(--backSize) * 0.5 * ${i % 2 === 0 ? 0.5 : 0.7});'>
-                        <span>${key}</span>
-                        <br>
-                        ${ratesList[key].length}(${Math.floor(rate * 100)}%)
-                    </p>
-                </div>
+            cs += `${RATE_COLORS[key]} ${r * 100}%, ${RATE_COLORS[key]} ${(r + rate) * 100}%,`;
+            ps += `
+            <p style='--posRate: ${(0.5 - (r + rate * 0.5))}; ${rate === 0 ? 'display: none;' : ''}'>
+                <span>${key}</span>
+                <br>
+                ${ratesList[key].length}(${Math.floor(rate * 100)}%)
+            </p>
             `;
             return r + rate;
-        }, 0.5);
+        }, 0);
+
+        graph.innerHTML = `
+            <div class='graphArea' style='background-image: conic-gradient(${cs.replace(/,$/, '')});'>
+            <p>${this._rankings.length}件</p>
+            <div class='graphDesc'>${ps}</div>
+        `;
     },
     refreshSortElements() {
         const target = document.getElementById("filter");
