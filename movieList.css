@@ -200,8 +200,8 @@ main {
     transform: translate(-50%, -50%);
     --radius: 0.35;
     --posRate: 0;
-    margin-left: calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * sin(pi * 2 * var(--posRate)));
-    margin-top:  calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * cos(pi * 2 * var(--posRate)));
+    margin-left: calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * cos(pi * 2 * var(--posRate)));
+    margin-top:  calc(var(--backSize) * 0.5 + calc(var(--radius) * var(--backSize)) * sin(pi * 2 * var(--posRate)));
     margin-right: 0;
     margin-bottom: 0;
 

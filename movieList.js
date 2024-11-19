@@ -50,7 +50,7 @@ const RankController = {
             const rate = ratesList[key].length / this._rankings.length;
             cs += `${RATE_COLORS[key]} ${r * 100}%, ${RATE_COLORS[key]} ${(r + rate) * 100}%,`;
             ps += `
-            <p style='--posRate: ${(0.5 - (r + rate * 0.5))}; ${rate === 0 ? 'display: none;' : ''}'>
+            <p style='--posRate: ${(r + rate * 0.5 - 0.25)}; ${rate === 0 ? 'display: none;' : ''}'>
                 <span>${key}</span>
                 <br>
                 ${ratesList[key].length}(${Math.floor(rate * 100)}%)
