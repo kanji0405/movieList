@@ -115,13 +115,4 @@ const RankController = {
     },
 };
 
-Promise.all([
-    new Promise(resolve => {
-        const script = document.createElement('script');
-        script.src = './formatted.txt';
-        script.addEventListener('load', resolve);
-        document.head.appendChild(script);
-    }),
-    new Promise(resolve => window.addEventListener('load', resolve))
-])
-    .then(() => RankController.onLoaded(TEXTS));
+window.addEventListener('load', () => RankController.onLoaded(TEXTS));
