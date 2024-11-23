@@ -1,4 +1,5 @@
-const localMode = location.href.startsWith('file://');
+(function(){
+const localMode = location.protocol === 'file:';
 
 const RATE_COLORS = {
     0: '#444444',
@@ -26,69 +27,71 @@ const RankController = {
                 id: i + 1,
                 point: Number(point),
                 title,
+                searchTitle: title.toUpperCase(),
                 desc: localMode ? desc.replace(/^\n+/, "") : '',
                 image: localMode ? image : null,
             };
         });
 
-        this.refreshRateGraph();
-        this.refreshList();
-        this.refreshSortElements();
+        this.initRateGraph();
+        this.initList();
+        this.initSortElements();
+        this.initInputForm();
     },
-    refreshRateGraph() {
+    initRateGraph() {
+        $('<div>', { class: 'graphArea'})
+            .appendTo($('.rateGraph'))
+            .append(
+                $('<div>', { class: 'graphDesc' }),
+                $('<div>', { class: 'graphCenter' }).append($('<p>', { text: '0' }))
+            );
+        $(document.body).on('searchBoxChanged', (_, { filteredList }) => this.refreshRateGraph(filteredList));
+        this.refreshRateGraph(this._rankings);
+    },
+    refreshRateGraph(rankings) {
         const ratesList = Object.keys(RATE_COLORS).map(
-            key => this._rankings.filter(ranking => ranking.point === Number(key))
+            key => rankings.filter(ranking => ranking.point === Number(key))
         );
-        const graphDesc = $('<div>', { class: 'graphDesc' });
+        const graphDesc = $('div.graphDesc').empty();
         const cs = [];
         Object.keys(RATE_COLORS).reverse().reduce((r, key) => {
-            const rate = ratesList[key].length / this._rankings.length;
+            const rate = ratesList[key].length / (rankings.length || 1);
             cs.push({ color: RATE_COLORS[key], r1: r * 100, r2: (r + rate) * 100 });
             $('<p>', {
                 html: `<span>${key}</span><br>${ratesList[key].length}(${Math.floor(rate * 100)}%)`,
-                css: { '--posRate': (r + rate * 0.5 - 0.25), 'display': rate === 0 ? 'none' : null },
+                css: { '--posRate': (r + rate * 0.5 - 0.25), 'display': rate === 0 ? 'none' : 'inherit' },
             })
                 .appendTo(graphDesc);
             return r + rate;
         }, 0);
 
-        $('<div>', {
-            class: 'graphArea',
-            css: {
-                backgroundImage: `conic-gradient(${
-                    cs.map(({ color, r1, r2 }) => `${color} ${r1}%, ${color} ${r2}%`)
-                })`,
-            },
-        })
-            .appendTo($('.rateGraph'))
-            .append(
-                graphDesc,
-                $('<div>', { class: 'graphCenter' }).append($('<p>', { text: `${this._rankings.length}件` })),
-            );
+        $('div.graphArea').css({
+            backgroundImage: `conic-gradient(${cs.map(({ color, r1, r2 }) => `${color} ${r1}%, ${color} ${r2}%`)})`,
+        });
+        $('div.graphCenter p').text(rankings.length);
     },
-    refreshSortElements() {
+    initSortElements() {
         const search = new URLSearchParams(window.location.search);
         const sortType = Object.values(SORT_TYPES).find(val => val.symbol === search.get('sortType'))
             || SORT_TYPES.OLDER_DATE;
 
+        const options = Object.keys(SORT_TYPES).map(key => {
+            const type = SORT_TYPES[key];
+            return $('<option>', { text: type.text, value: key, selected: sortType === type });
+        });
         $('#filter')
-            .append(
-                Object.keys(SORT_TYPES).map(key => {
-                    const type = SORT_TYPES[key];
-                    return $('<option>', { text: type.text, value: key, selected: sortType === type })
-                }),
-            )
+            .append(options)
             .on('change', e => {
                 const sortType = e.target.value;
                 const search = new URLSearchParams(window.location.search);
                 search.set('sortType', SORT_TYPES[sortType].symbol);
                 window.history.pushState({}, '', `${window.location.pathname}?${search.toString()}`);
-                $('body').trigger('sortTypeChanged', SORT_TYPES[sortType]);
+                $(document.body).trigger('sortTypeChanged', SORT_TYPES[sortType]);
             });
 
-        $('body').trigger('sortTypeChanged', sortType);
+        $(document.body).trigger('sortTypeChanged', sortType);
     },
-    refreshList() {
+    initList() {
         const movieList = this._rankings.map(({ id, point, title, desc, image }) => {
             const content = $('<div>', { class: 'content' });
             const li = $('<li>', {
@@ -116,7 +119,7 @@ const RankController = {
             return li;
         });
 
-        $('body').on('sortTypeChanged', (_, sortType) => {
+        $(document.body).on('sortTypeChanged', (_, sortType) => {
             const compare = (key, a, b) => a.data(key) > b.data(key) ? 1 : -1;
             const list = movieList.toSorted((a, b) => {
                 switch (sortType) {
@@ -129,7 +132,24 @@ const RankController = {
             });
             $("#movieArea").empty().append(list);
         });
+        $(document.body).on('searchBoxChanged', (_, { filteredList }) => {
+            movieList.forEach(child => {
+                const display = filteredList.some(({ id }) => child.data('id') === id) ? 'inherit' : 'none';
+                child.css({ display });
+            });
+        });
+    },
+    filterBySearchBox(text) {
+        return this._rankings.filter(({ searchTitle }) => searchTitle.includes(text));
+    },
+    initInputForm() {
+        $('#searchBox').on('change', e => {
+            const text = (e.target.value || "").toUpperCase();
+            const filteredList = this.filterBySearchBox(text);
+            $(document.body).trigger('searchBoxChanged', { text, filteredList });
+        });
     },
 };
 
-window.addEventListener('load', () => RankController.onLoaded(TEXTS));
+$().ready(() => RankController.onLoaded(TEXTS));
+})();
