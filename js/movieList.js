@@ -17,7 +17,6 @@ const SORT_TYPES = {
 };
 
 const RankController = {
-    _sortType: SORT_TYPES.OLDER_DATE,
     _rankings: null,
     onLoaded(res) {
         const list = res.split(";");
@@ -32,86 +31,104 @@ const RankController = {
             };
         });
 
-        const sortKey = location.hash.replace(/^#/, "");
-        this._sortType = Object.values(SORT_TYPES).find(val => val.symbol === sortKey)
-            || SORT_TYPES.OLDER_DATE;
-        this.refreshSortElements();
         this.refreshRateGraph();
         this.refreshList();
+        this.refreshSortElements();
     },
     refreshRateGraph() {
         const ratesList = Object.keys(RATE_COLORS).map(
             key => this._rankings.filter(ranking => ranking.point === Number(key))
         );
-        const graph = document.querySelector('.rateGraph');
-        let cs = '';
-        let ps = '';
+        const graphDesc = $('<div>', { class: 'graphDesc' });
+        const cs = [];
         Object.keys(RATE_COLORS).reverse().reduce((r, key) => {
             const rate = ratesList[key].length / this._rankings.length;
-            cs += `${RATE_COLORS[key]} ${r * 100}%, ${RATE_COLORS[key]} ${(r + rate) * 100}%,`;
-            ps += `
-            <p style='--posRate: ${(r + rate * 0.5 - 0.25)}; ${rate === 0 ? 'display: none;' : ''}'>
-                <span>${key}</span>
-                <br>
-                ${ratesList[key].length}(${Math.floor(rate * 100)}%)
-            </p>
-            `;
+            cs.push({ color: RATE_COLORS[key], r1: r * 100, r2: (r + rate) * 100 });
+            $('<p>', {
+                html: `<span>${key}</span><br>${ratesList[key].length}(${Math.floor(rate * 100)}%)`,
+                css: { '--posRate': (r + rate * 0.5 - 0.25), 'display': rate === 0 ? 'none' : null },
+            })
+                .appendTo(graphDesc);
             return r + rate;
         }, 0);
 
-        graph.innerHTML = `
-            <div class='graphArea' style='background-image: conic-gradient(${cs.replace(/,$/, '')});'>
-            <div class='graphDesc'>${ps}</div>
-            <div class='graphCenter'>
-                <p>${this._rankings.length}件</p>
-            </div>
-        `;
+        $('<div>', {
+            class: 'graphArea',
+            css: {
+                backgroundImage: `conic-gradient(${
+                    cs.map(({ color, r1, r2 }) => `${color} ${r1}%, ${color} ${r2}%`)
+                })`,
+            },
+        })
+            .appendTo($('.rateGraph'))
+            .append(
+                graphDesc,
+                $('<div>', { class: 'graphCenter' }).append($('<p>', { text: `${this._rankings.length}件` })),
+            );
     },
     refreshSortElements() {
-        const target = document.getElementById("filter");
-        target.innerHTML = Object.keys(SORT_TYPES).reduce((r, key) => {
-            const { text } = SORT_TYPES[key];
-            return r.concat(
-                `<option value='${key}' ${this._sortType === SORT_TYPES[key] ? 'selected' : ''}>${text}</option>`
-            );
-        }, '');
-        target.addEventListener('change', this.sortRanking.bind(this, target));
-    },
-    sortRanking(target) {
-        this._sortType = SORT_TYPES[target.value];
-        location.hash = this._sortType.symbol;
-        this.refreshList();
+        const search = new URLSearchParams(window.location.search);
+        const sortType = Object.values(SORT_TYPES).find(val => val.symbol === search.get('sortType'))
+            || SORT_TYPES.OLDER_DATE;
+
+        $('#filter')
+            .append(
+                Object.keys(SORT_TYPES).map(key => {
+                    const type = SORT_TYPES[key];
+                    return $('<option>', { text: type.text, value: key, selected: sortType === type })
+                }),
+            )
+            .on('change', e => {
+                const sortType = e.target.value;
+                const search = new URLSearchParams(window.location.search);
+                search.set('sortType', SORT_TYPES[sortType].symbol);
+                window.history.pushState({}, '', `${window.location.pathname}?${search.toString()}`);
+                $('body').trigger('sortTypeChanged', SORT_TYPES[sortType]);
+            });
+
+        $('body').trigger('sortTypeChanged', sortType);
     },
     refreshList() {
-        const array = this._rankings.slice();
-        switch (this._sortType) {
-            case SORT_TYPES.OLDER_DATE:   break;
-            case SORT_TYPES.LASTEST_DATE: array.reverse(); break;
-            case SORT_TYPES.HIGHER_RATE:  array.sort((a, b) => b.point - a.point); break;
-            case SORT_TYPES.LOWER_RATE:   array.sort((a, b) => a.point - b.point); break;
-        };
-        document.getElementById("movieArea").innerHTML = array.reduce((r, { id, point, title, desc, image }) => {
-            const button = desc ?
-                `<button onclick='RankController.showReview(${id})'>表示</button>` : '';
-            return r.concat(`
-                <li class='movieInfo' value='${id}' style='--cardColor: ${RATE_COLORS[point]}'>
-                    <div class='number'>
-                        <div class='id'>${id}</div>
-                        <div class='rate'>${"★".repeat(point)}</div>
-                    </div>
-                    <div class='content'>
-                        ${image ? `<img src='img/${image}.jpg' alt='${image}'>` : ''}
-                        <h3 class='title'>${title}</h3>
-                        ${button}
-                        <p class='desc'>${desc.replace(/\n/g, '<br>')}</p>
-                    </div>
-                </li>
-            `);
-        }, '');
-    },
-    showReview(id) {
-        const desc = document.querySelector(`.movieInfo[value="${id}"]`);
-        desc.classList.add('shown');
+        const movieList = this._rankings.map(({ id, point, title, desc, image }) => {
+            const content = $('<div>', { class: 'content' });
+            const li = $('<li>', {
+                class: 'movieInfo',
+                css: { '--cardColor': RATE_COLORS[point] },
+                'data-id': id,
+                'data-point': point,
+            })
+                .append(
+                    $('<div>', { class: 'number' }).append(
+                        $('<div>', { class: 'id', text: id }),
+                        $('<div>', { class: 'rate', text: "★".repeat(point) }),
+                    ),
+                    content,
+                );
+
+            if (image) {
+                $('<img', { src: `img/${image}.jpg`, alt: image }).appendTo(content);
+            }
+            $('<h3>', { class: 'title', text: title }).appendTo(content);
+            if (desc) {
+                $('<p>', { class: 'desc', text: desc }).appendTo(content);
+                $('<button>', { text: '表示', click: () => li.addClass('shown') }).appendTo(content);
+            }
+            return li;
+        });
+
+        $('body').on('sortTypeChanged', (_, sortType) => {
+            const compare = (key, a, b) => a.data(key) > b.data(key) ? 1 : -1;
+            const list = movieList.toSorted((a, b) => {
+                switch (sortType) {
+                case SORT_TYPES.OLDER_DATE:   return compare('id', a, b);
+                case SORT_TYPES.LASTEST_DATE: return compare('id', b, a);
+                case SORT_TYPES.HIGHER_RATE:  return compare('point', b, a);
+                case SORT_TYPES.LOWER_RATE:   return compare('point', a, b);
+                };
+                return 0;
+            });
+            $("#movieArea").empty().append(list);
+        });
     },
 };
 
