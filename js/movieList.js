@@ -18,7 +18,12 @@ const SORT_TYPES = {
 };
 
 const RankController = {
-    _rankings: null,
+    /**
+     * @typedef {{ id: number, point: number, title: string, searchTitle: string, desc: string, image?: string }} Ranking
+     * 
+     * @type {Ranking[]}
+    */
+    _rankings: [],
     onLoaded(res) {
         const list = res.split(";");
         this._rankings = list.slice(0, list.length - 1).map((line, i) => {
@@ -28,7 +33,7 @@ const RankController = {
                 point: Number(point),
                 title,
                 searchTitle: title.toUpperCase(),
-                desc: localMode ? desc.replace(/^\n+/, "") : '',
+                desc: localMode ? desc.replace(/^\n+/, "").replace(/\n/g, '<br>') : '',
                 image: localMode ? image : null,
             };
         });
@@ -48,6 +53,9 @@ const RankController = {
         $(document.body).on('searchBoxChanged', (_, { filteredList }) => this.refreshRateGraph(filteredList));
         this.refreshRateGraph(this._rankings);
     },
+    /**
+     * @param {Ranking[]} rankings
+     */
     refreshRateGraph(rankings) {
         const ratesList = Object.keys(RATE_COLORS).map(
             key => rankings.filter(ranking => ranking.point === Number(key))
@@ -113,7 +121,7 @@ const RankController = {
             }
             $('<h3>', { class: 'title', text: title }).appendTo(content);
             if (desc) {
-                $('<p>', { class: 'desc', text: desc }).appendTo(content);
+                $('<p>', { class: 'desc', html: desc }).appendTo(content);
                 $('<button>', { text: '表示', click: () => li.addClass('shown') }).appendTo(content);
             }
             return li;
